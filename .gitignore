@@ -108,7 +108,7 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 # Environments
-.env
+.env/
 .venv
 env/
 venv/
@@ -225,7 +225,7 @@ fabric.properties
 # Azure Toolkit for IntelliJ plugin
 # https://plugins.jetbrains.com/plugin/8053-azure-toolkit-for-intellij
 .idea/**/azureSettings.xml
-.idea
+.idea/
 **/.idea/
 ### Python ###
 # Byte-compiled / optimized / DLL files
