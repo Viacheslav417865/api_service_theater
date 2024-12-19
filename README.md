@@ -36,6 +36,6 @@ to the theater.
 
 Screenshots
 
-![Api Root](screnshots\Api Root.png)
+![Api Root](screnshots/Api Root.png)
 
-![theatre_structure](screnshots\theatre_structure.jpg)
+![theatre_structure](screnshots/theatre_structure.jpg)
