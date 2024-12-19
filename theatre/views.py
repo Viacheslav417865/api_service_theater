@@ -1,4 +1,5 @@
 from datetime import datetime
+from django.db.models import F, Count
 from django.shortcuts import render
 from rest_framework import viewsets, filters
 from rest_framework.exceptions import PermissionDenied
@@ -85,35 +86,36 @@ class TheatreHallViewSet(viewsets.ModelViewSet):
 
 class PerformanceViewSet(viewsets.ModelViewSet):
     queryset = Performance.objects.select_related(
-        "play",
-        "theatre_hall",
+        "play", "theatre_hall").annotate(
+        tickets_available=(
+                F("theatre_hall__rows") *
+                F("theatre_hall__seats_in_row")
+                - Count("tickets_performance")
+        )
     )
 
     def get_queryset(self):
-        play_id = self.request.query_params.get(
-            "play"
-        )
+        play_id = self.request.query_params.get("play")
         theatre_hall_id = self.request.query_params.get(
             "hall"
         )
-        date = self.request.query_params.get(
-            "date"
-        )
+        date = self.request.query_params.get("date")
+
         queryset = self.queryset
+
         if play_id:
-            queryset = queryset.filter(
-                play_id=int(play_id)
-            )
+            queryset = queryset.filter(play_id=int(play_id))
+
         if theatre_hall_id:
             queryset = queryset.filter(
                 theatre_hall_id=int(theatre_hall_id)
             )
+
         if date:
             date = datetime.strptime(
                 date, "%Y-%m-%d").date()
-            queryset = queryset.filter(
-                show_time__date=date
-            )
+            queryset = queryset.filter(show_time__date=date)
+
         return queryset.distinct()
 
     def get_serializer_class(self):
@@ -136,12 +138,13 @@ class ReservationViewSet(viewsets.ModelViewSet):
         if self.request.user.is_authenticated:
             return queryset.filter(user=self.request.user)
         raise PermissionDenied(
-            "You do not have permission "
-            "to access this resource."
+            "You do not have permission"
+            " to access this resource."
         )
 
 
 class TicketViewSet(viewsets.ModelViewSet):
+
     def get_serializer_class(self):
         if self.action == "retrieve":
             return TicketDetailSerializer
@@ -156,8 +159,10 @@ class TicketViewSet(viewsets.ModelViewSet):
         if self.request.user.is_staff:
             return queryset
         if self.request.user.is_authenticated:
-            return queryset.filter(reservation__user=self.request.user)
+            return queryset.filter(
+                reservation__user=self.request.user
+            )
         raise PermissionDenied(
-            "You do not have permission"
-            " to access this resource."
+            "You do not have permission "
+            "to access this resource."
         )
