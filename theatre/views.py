@@ -3,6 +3,8 @@ from django.db.models import F, Count
 from rest_framework import viewsets, filters, mixins
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.exceptions import PermissionDenied
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 from theatre.models import (
     Actor,
@@ -82,6 +84,26 @@ class PlayViewSet(viewsets.ModelViewSet):
             return PlayListSerializer
         return PlaySerializer
 
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "genres",
+                type=OpenApiTypes.NUMBER,
+                description="Filter by genres (ex. ?genres=2,1)",
+                many=True,
+            ),
+            OpenApiParameter(
+                "actors",
+                type=OpenApiTypes.NUMBER,
+                description="Filter by actors id (ex. ?actors=2,3)",
+                many=True,
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request,
+                            *args, **kwargs)
+
 
 class TheatreHallViewSet(viewsets.ModelViewSet):
     queryset = TheatreHall.objects.all()
@@ -130,6 +152,32 @@ class PerformanceViewSet(viewsets.ModelViewSet):
         if self.action == "list":
             return PerformanceListSerializer
         return PerformanceSerializer
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "play_id",
+                type=OpenApiTypes.INT,
+                description="Filter by play id (ex. ?play=2)",
+            ),
+            OpenApiParameter(
+                "theatre_hall_id",
+                type=OpenApiTypes.INT,
+                description=
+                "Filter by theatre hall id (ex. ?hall=2)",
+            ),
+            OpenApiParameter(
+                "date",
+                type=OpenApiTypes.DATE,
+                description=(
+                        "Filter by datetime of performance " "("
+                        "ex. ?date=2022-10-23)"
+                ),
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class ReservationViewSet(

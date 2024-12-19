@@ -1,6 +1,5 @@
 """
-URL configuration for api project.
-
+URL configuration for theatre_service_api project.
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/5.1/topics/http/urls/
 Examples:
@@ -15,21 +14,36 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+from debug_toolbar.toolbar import debug_toolbar_urls
 from django.contrib import admin
 from django.urls import path, include
-from debug_toolbar.toolbar import debug_toolbar_urls
+from drf_spectacular.views import (
+    SpectacularAPIView,
+    SpectacularSwaggerView,
+    SpectacularRedocView,
+)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/theatre/",
+         include("theatre.urls",
+                 namespace="theatre")
+         ),
+    path("api/user/",
+         include("user.urls",
+                 namespace="user")),
+    path("api/schema/",
+         SpectacularAPIView.as_view(),
+         name="schema"),
     path(
-        "api/theatre/",
-        include("theatre.urls",
-                namespace="theatre")
+        "api/doc/swagger/",
+        SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger-ui",
     ),
     path(
-        "api/user/",
-        include(
-            "user.urls",
-            namespace="user")
+        "api/doc/redoc/",
+        SpectacularRedocView.as_view(url_name="schema"),
+        name="redoc",
     ),
+    path("__debug__/", include("debug_toolbar.urls")),
 ] + debug_toolbar_urls()
