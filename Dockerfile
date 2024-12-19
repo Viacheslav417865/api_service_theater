@@ -1,4 +1,4 @@
-FROM python:alpine3.19
+FROM python3.11:alpine3.19
 
 LABEL maintainer="sfinks417865@gmail.com"
 
