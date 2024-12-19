@@ -55,10 +55,14 @@ class TheatreHall(models.Model):
 
 class Performance(models.Model):
     play = models.ForeignKey(
-        Play, on_delete=models.CASCADE, related_name="performances"
+        Play,
+        on_delete=models.CASCADE,
+        related_name="performances",
     )
     theatre_hall = models.ForeignKey(
-        TheatreHall, on_delete=models.CASCADE, related_name="performances_in_hall"
+        TheatreHall,
+        on_delete=models.CASCADE,
+        related_name="performances_in_hall",
     )
     show_time = models.DateTimeField()
 
@@ -96,7 +100,7 @@ class Ticket(models.Model):
 
     class Meta:
         unique_together = (
-            "movie_session",
+            "performance",
             "row",
             "seat",
         )
