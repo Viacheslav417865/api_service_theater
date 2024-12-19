@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 from rest_framework.serializers import SlugRelatedField
 from theatre.models import (
     Actor,
@@ -8,6 +9,7 @@ from theatre.models import (
     TheatreHall,
     Performance,
     Reservation,
+    Ticket,
 )
 
 
@@ -69,7 +71,7 @@ class TheatreHallSerializer(serializers.ModelSerializer):
         )
 
     def validate_rows(self, value):
-        if value <= 0:
+        if value <= 1:
             raise serializers.ValidationError(
                 "The number of "
                 "rows must be greater than zero."
@@ -77,7 +79,7 @@ class TheatreHallSerializer(serializers.ModelSerializer):
         return value
 
     def validate_seats_in_row(self, value):
-        if value <= 0:
+        if value <= 1:
             raise serializers.ValidationError(
                 "The number of seats "
                 "per row must be greater than zero."
@@ -116,7 +118,8 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
     def create(self, validated_data):
-        return get_user_model().objects.create_user(**validated_data)
+        return (get_user_model().objects.
+                create_user(**validated_data))
 
     def update(self, instance, validated_data):
         password = validated_data.pop("password", None)
@@ -131,3 +134,25 @@ class ReservationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reservation
         fields = ("created_at", "user")
+
+
+class TicketSerializer(serializers.ModelSerializer):
+    def validate(self, attrs):
+        data = super(TicketSerializer,
+                     self).validate(attrs=attrs)
+        Ticket.validate_ticket(
+            attrs["row"],
+            attrs["seat"],
+            attrs["performance"].theatre_hall,
+            ValidationError,
+        )
+        return data
+
+    class Meta:
+        model = Ticket
+        fields = (
+            "row",
+            "seat",
+            "performance",
+            "reservation",
+        )
